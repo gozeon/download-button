@@ -16,7 +16,7 @@
     var downloading = false;
     var completed = false;
     var progressTimer = 0;
-
+    var testUri = "https://scontent-lga3-1.cdninstagram.com/vp/0594a770e588d329ff72059390800c82/5B055637/t51.2885-15/e35/27582036_296012250925511_5216403888852172800_n.jpg?dl=1";
     // Capture click events
     button.addEventListener('click', function () {
         if (!completed) { // Don't do anything if downloading has been completed
@@ -35,10 +35,12 @@
         buttonContainer.classList.add('downloading');
         animateIcon();
         // Update progress after 1s
-        progressTimer = setTimeout(function () {
-            buttonContainer.classList.add('progressing');
-            animateProgress();
-        }, 1000);
+        // progressTimer = setTimeout(function () {
+        //     buttonContainer.classList.add('progressing');
+        //     animateProgress();
+        // }, 1000);
+
+        downloadImage(testUri);
     }
 
     // Stop the download
@@ -75,10 +77,10 @@
     }
 
     // Progress animation
-    function animateProgress() {
+    function animateProgress(progress) {
         // Fake progress animation from 0 to 100%
         // This should be replaced with real progress data (real progress percent instead '100%'), and maybe called multiple times
-        circularProgressBar.draw(0, '100%', 2.5, {easing: anime.easings['easeInQuart'], update: updateProgress, callback: completedAnimation});
+        // circularProgressBar.draw(0, '100%', 2.5, {easing: anime.easings['easeInQuart'], update: updateProgress, callback: completedAnimation});
 
         // // Another example to see a different fake progress (uncomment this and comment line above)
         // circularProgressBar.draw(0, '40%', 1.5, {easing: anime.easings['easeInOutCubic'], update: updateProgress, callback: function () {
@@ -86,6 +88,15 @@
         //         circularProgressBar.draw(0, '100%', 1, {delay: 0.3, easing: anime.easings.easeCircleIn, update: updateProgress, callback: completedAnimation});
         //     }});
         // }});
+
+        buttonContainer.classList.add('progressing');
+
+        if (progress === '100%') {
+            circularProgressBar.draw(0, '100%', 1, {delay: 0.3, easing: anime.easings.easeCircleIn, update: updateProgress, callback: completedAnimation});
+            return;
+        }
+
+        circularProgressBar.draw(0, progress, 1.5, {easing: anime.easings['easeInOutCubic'], update: updateProgress, callback: function () {}});
     }
 
     // Animation performed when download has been completed
@@ -126,6 +137,20 @@
                 }
             });
         }, 1000);
+    }
+
+    function downloadImage(uri) {
+        var client = new XMLHttpRequest();
+        client.open("GET", uri);
+        client.onprogress = function (pe) {
+            if(pe.lengthComputable) {
+                animateProgress(Math.floor((pe.loaded / pe.total) * 100) + '%');
+            }
+        }
+        client.onloadend = function (pe) {
+            animateProgress('100%');
+        }
+        client.send();
     }
 
 })();
